@@ -37,7 +37,14 @@ DIR* StartDir(char *path, int mngnum)
     //заполняем панель именами без сортировки
     while((current=readdir(dp[mngnum]))!=NULL)
     {
-        PrintDir(mngnum,i,current->d_name);
+        if(current->d_type==4)
+        {
+            PrintDir(mngnum,i,'/',current->d_name);
+        }
+        else
+        {
+            PrintDir(mngnum,i,'*',current->d_name);
+        }
         i++;
     }
     //сохраняем имя текущего каталога
@@ -72,6 +79,7 @@ int ChangeDir(int mngnum,int pos)
         perror("error of changing dir\n");
         //при неудаче(например пытались перейти в файл) просто заново инициализируем поток
         //с текущим именем, т.е. каталог не меняется
+        free(curname[mngnum]);
         dp[mngnum]=StartDir(".",mngnum);
         return pos;
     }
@@ -89,7 +97,14 @@ int ChangeDir(int mngnum,int pos)
     i=1;
     while((current=readdir(dp[mngnum]))!=NULL)
     {
-        PrintDir(mngnum,i,current->d_name);
+        if(current->d_type==4)
+        {
+            PrintDir(mngnum,i,'/',current->d_name);
+        }
+        else
+        {
+            PrintDir(mngnum,i,'*',current->d_name);
+        }
         i++;
     }
     SelectDir(mngnum,1,1);
@@ -131,6 +146,8 @@ int PrintInfo(int mngnum,int pos)
     PrintInfo_g(NULL,data,2,1);
     data=(long int)st->st_mode;
     PrintInfo_g(NULL,data,1,2);
+    data=(long int)current->d_type;
+    PrintInfo_g(NULL,data,2,2);
     free(st);
     return 1;
 
@@ -142,3 +159,29 @@ void FinishDir(int mngnum)
     closedir(dp[mngnum]);
     free(curname[mngnum]);
 }
+
+//определние директория или файл
+//возвращаемое значение:
+//0 - директория, 1 - файл, -1 - что-то другое
+int DirExecAnalysis(int mngnum, int pos,char *name)
+{
+    chdir(curname[mngnum]);
+    //находим позицию
+    rewinddir(dp[mngnum]);
+    int i;
+    for(i=1;i<=pos;i++)
+    {
+        current=readdir(dp[mngnum]);
+    }
+    if(current->d_type==4)
+        return 0;
+    if(current->d_type==8)
+    {
+        strncpy(name,current->d_name,70);
+        //name=current->d_name;
+        return 1;
+    }
+    return -1;
+}
+
+

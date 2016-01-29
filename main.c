@@ -3,11 +3,12 @@
 
 #include "fmng.h"
 
-extern WINDOW *menu[2],*mng[2];
+extern WINDOW *menu[2],*mng[2],*cmd;
 
 int main(void)
 {
-    int ch,mngnum,pos;
+    int ch,mngnum,pos,check;
+    char str[70];
     DIR *dp[2];
     mngnum=0;
     pos=1;
@@ -18,7 +19,7 @@ int main(void)
         DeleteScreen();
         return 0;
     }
-    dp[1]=StartDir(".",1);
+    dp[1]=StartDir("/home/kirill/kurs/red/editor",1);
     if(dp[0]==NULL)
     {
         DeleteScreen();
@@ -27,7 +28,7 @@ int main(void)
     }
     SelectDir(0,1,1);
 
-    while((ch=wgetch(menu[0]))!=KEY_F(2))
+    while((ch=wgetch(menu[0]))!=KEY_F(3))
     {
         if(ch==KEY_UP)
         {
@@ -52,10 +53,26 @@ int main(void)
             PrintInfo(mngnum,pos);
 
         }
+        if(ch==KEY_F(2))
+        {
+            ActivateCMD();
+        }
         //отлавливаем enter по коду
         if(ch==10)
         {
-            pos=ChangeDir(mngnum,pos);
+            check=DirExecAnalysis(mngnum,pos,str);
+            if(check==-1)
+                continue;
+            if(check==0)
+            {
+                pos=ChangeDir(mngnum,pos);
+            }
+            if(check==1)
+            {
+                StartFile(str);
+                RestoreState();
+
+            }
         }
 
     }
