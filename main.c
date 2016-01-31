@@ -3,7 +3,7 @@
 
 #include "fmng.h"
 
-extern WINDOW *menu[2],*mng[2],*cmd;
+extern WINDOW *menu[2],*mng[2];
 
 int main(void)
 {
@@ -19,8 +19,8 @@ int main(void)
         DeleteScreen();
         return 0;
     }
-    dp[1]=StartDir("/home/kirill/kurs/red/editor",1);
-    if(dp[0]==NULL)
+    dp[1]=StartDir("/",1);
+    if(dp[1]==NULL)
     {
         DeleteScreen();
         FinishDir(0);
@@ -50,8 +50,7 @@ int main(void)
         }
         if(ch==KEY_F(1))
         {
-            PrintInfo(mngnum,pos);
-
+            check=PrintInfo(mngnum,pos);
         }
         if(ch==KEY_F(2))
         {

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+//запуск исполняемого файла
 int StartFile(char *name)
 {
     pid_t pid;
@@ -16,31 +16,43 @@ int StartFile(char *name)
     if(pid==0)
     {
         execl(name,name,NULL);
-        //perror("file error\n");
-        //не вызвался, значит, текстовый
-
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     else
     {
         wait(&status);
+        if(status==EXIT_FAILURE)
+        {
+            ErrorMsg("can't start file\n");
+        }
     }
     return 0;
 }
 
+//выполнение команды
+//здесь предполагается, что команда будет иметь вид
+//cat filename | head -n
+//filename`- имя файла
+//n - число строк, которые надо отобразить
 int ExecuteCMD(char *str)
 {
     int cnt;
     char *coms[20],ps,pch1[15];
     pid_t pid;
     int status,fd[2],fd1[2];
+    //разбиваем строк на подстроки
     char *pch=strtok(str," ");
     for(cnt=0;pch!=NULL;cnt++)
     {
         coms[cnt]=pch;
         pch=strtok(NULL," ");
     }
-    //
+    if(cnt<5)
+    {
+        ErrorMsg("not enough args in command");
+        return 0;
+    }
+    //создаем конвеер межд 3 процессами
     pipe(fd);
     pipe(fd1);
     pid=fork();
@@ -67,7 +79,7 @@ int ExecuteCMD(char *str)
             strncat(pch1,coms[3],4);
             execl(pch1,pch1,coms[4],NULL);
             perror("\nerr\n");
-            exit(2);
+            exit(1);
         }
         else
         {
@@ -84,9 +96,11 @@ int ExecuteCMD(char *str)
         }
     }
     //
-    return 0;
+    return 1;
 }
 
+//открытие файла с помощью моего редактора texteditor
+//который лежит в директории /home/kirill/kurs
 int OpenFile(char *name)
 {
     pid_t pid;
@@ -98,13 +112,16 @@ int OpenFile(char *name)
     pid=fork();
     if(pid==0)
     {
-
         execl("/home/kirill/kurs/texteditor","/home/kirill/kurs/texteditor",fullname,NULL);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     else
     {
         wait(&status);
+        if(status==EXIT_FAILURE)
+        {
+            ErrorMsg("problem with file open");
+        }
     }
     return 0;
 }

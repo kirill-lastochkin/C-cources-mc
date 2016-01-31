@@ -17,6 +17,7 @@ void InitScreen(void)
     start_color();
     init_pair(1,COLOR_YELLOW,COLOR_BLUE);
     init_pair(2,COLOR_BLUE,COLOR_YELLOW);
+    init_pair(3,COLOR_RED,COLOR_BLACK);
     menu[0]=newwin(5,getmaxx(stdscr)/4-1,getmaxy(stdscr)-5,1);
     menu[1]=newwin(5,getmaxx(stdscr)*3/4,getmaxy(stdscr)-5,getmaxx(stdscr)/4);
     mng[0]=newwin(getmaxy(stdscr)-9,getmaxx(stdscr)/2-1,1,1);
@@ -134,12 +135,17 @@ void SelectDir(int mngnum,int pos,int mode)
     int len,i;
     len=getmaxx(mng[mngnum]);
     name=(char*)calloc(len,sizeof(char));
+    if(name==NULL)
+    {
+        perror("bad calloc\n");
+        exit(EXIT_FAILURE);
+    }
     //забираем все символы
     for(i=1;i<(len-1);i++)
     {
         name[i-1]=mvwinch(mng[mngnum],pos,i);
     }
-    //перепечатываем с нжным цветом
+    //перепечатываем с нyжным цветом
     if(mode)
     {
         wattron(mng[mngnum],COLOR_PAIR(2)| A_BOLD);
@@ -158,7 +164,6 @@ void SelectDir(int mngnum,int pos,int mode)
 //стрелки лево-право переключают между панелями, возврат номер панели
 int LeftRightHandler(int x0,int mngnum,int pos)
 {
-    //curs_set(0);
     if(x0>0&&mngnum==0)
     {
         SelectDir(0,pos,0);
@@ -178,7 +183,6 @@ int LeftRightHandler(int x0,int mngnum,int pos)
 int UpDownHandler(int y0,int mngnum,int pos)
 {
     char ch;
-    //curs_set(0);
     //обрабатываем верхнюю границу
     if(!(pos==1&&y0<0))
     {
@@ -248,13 +252,13 @@ int PrintInfo_g(char* info,long int data,int line,int col)
 void RestoreState(void)
 {
     cbreak();
-    curs_set(0);
     keypad(menu[1],1);
     keypad(menu[0],1);
     noecho();
     SelectDir(0,1,0);
     SelectDir(1,1,0);
     ClearPanel(2);
+    curs_set(0);
     wrefresh(mng[0]);
     wrefresh(mng[1]);
     wrefresh(menu[0]);
@@ -262,24 +266,48 @@ void RestoreState(void)
     wrefresh(cmd);
 }
 
+//активация командной строки
 void ActivateCMD(void)
 {
-    int ch,i=0;
+    int ch,i=0,x,y;
     char command[getmaxx(cmd)];
     ClearPanel(3);
     wmove(cmd,1,1);
     curs_set(1);
+    keypad(cmd,1);
     while((ch=wgetch(cmd))!=10&&i<getmaxx(cmd))
     {
         wrefresh(cmd);
-        wprintw(cmd,"%c",ch);
-        command[i]=ch;
-        i++;
+        if(ch==KEY_BACKSPACE)
+        {
+            getyx(cmd,y,x);
+            if(x!=1)
+            {
+                wmove(cmd,y,x-1);
+                wdelch(cmd);
+                //после удаления символа нужно поправить рамку
+                box(cmd,0,0);
+                wmove(cmd,0,2);
+                wprintw(cmd,"Command line");
+                wmove(cmd,1,getmaxx(cmd)-2);
+                wprintw(cmd," ");
+                wmove(cmd,y,x-1);
+                i--;
+            }
+        }
+        else
+        {
+            wprintw(cmd,"%c",ch);
+            command[i]=ch;
+            i++;
+        }
     }
     ExecuteCMD(command);
-
+    curs_set(0);
+    wrefresh(cmd);
 }
 
+//распечатать результат выполненя команды командной строки (посмивольно)
 void PrintCMDResult(char ps, int pos)
 {
     int max;
@@ -316,7 +344,17 @@ void PrintCMDResult(char ps, int pos)
     wrefresh(menu[1]);
 }
 
+//сообщение об ошибке
 void ErrorMsg(char *str)
 {
-
+    ClearPanel(2);
+    wattron(menu[1],COLOR_PAIR(3)| A_BOLD);
+    wmove(menu[1],1,1);
+    wprintw(menu[1],"Error!");
+    wmove(menu[1],2,1);
+    wprintw(menu[1],str);
+    wattroff(menu[1],COLOR_PAIR(3)| A_BOLD);
+    wattron(menu[1],COLOR_PAIR(0)| A_BOLD);
+    curs_set(0);
+    wrefresh(menu[1]);
 }

@@ -49,6 +49,12 @@ DIR* StartDir(char *path, int mngnum)
     }
     //сохраняем имя текущего каталога
     curname[mngnum]=(char*)calloc(70,sizeof(char));
+    if(curname[mngnum]==NULL)
+    {
+        perror("memory error\n");
+        closedir(dp[mngnum]);
+        return NULL;
+    }
     if(getcwd(curname[mngnum],69)==NULL)
     {
         perror("error with getcwd\n");
@@ -128,7 +134,7 @@ int PrintInfo(int mngnum,int pos)
     if(st==NULL)
     {
         perror("memory error\n");
-        exit(1);
+        return 0;
     }
     i=stat(current->d_name,st);
     if(i==-1)
@@ -155,7 +161,6 @@ int PrintInfo(int mngnum,int pos)
     data=(long int)current->d_type;
     PrintInfo_g(NULL,data,2,2);
     free(st);
-    //S_IFMT
     return 1;
 
 }
