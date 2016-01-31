@@ -16,7 +16,9 @@ int StartFile(char *name)
     if(pid==0)
     {
         execl(name,name,NULL);
-        perror("file error\n");
+        //perror("file error\n");
+        //не вызвался, значит, текстовый
+
         exit(1);
     }
     else
@@ -82,5 +84,27 @@ int ExecuteCMD(char *str)
         }
     }
     //
+    return 0;
+}
+
+int OpenFile(char *name)
+{
+    pid_t pid;
+    int status;
+    char fullname[100];
+    getcwd(fullname,100);
+    strncat(fullname,"/",1);
+    strncat(fullname,name,99-strlen(fullname));
+    pid=fork();
+    if(pid==0)
+    {
+
+        execl("/home/kirill/kurs/texteditor","/home/kirill/kurs/texteditor",fullname,NULL);
+        exit(1);
+    }
+    else
+    {
+        wait(&status);
+    }
     return 0;
 }

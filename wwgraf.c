@@ -229,7 +229,7 @@ int PrintInfo_g(char* info,long int data,int line,int col)
             {
                 wmove(menu[1],line,(col-1)*getmaxx(menu[1])/2+1);
                 wprintw(menu[1],"mode: ");
-                wprintw(menu[1],"%d",data);
+                wprintw(menu[1],"%s",info);
             }
             if(line==2)
             {

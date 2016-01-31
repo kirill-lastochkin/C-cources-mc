@@ -144,11 +144,18 @@ int PrintInfo(int mngnum,int pos)
     PrintInfo_g(NULL,data,3,1);
     data=(long int)st->st_size;
     PrintInfo_g(NULL,data,2,1);
-    data=(long int)st->st_mode;
-    PrintInfo_g(NULL,data,1,2);
+    //
+    if(S_ISREG(st->st_mode))
+        PrintInfo_g("Regular file",0,1,2);
+    if(S_ISDIR(st->st_mode))
+        PrintInfo_g("Directory",0,1,2);
+    if(S_ISLNK(st->st_mode))
+        PrintInfo_g("Link file",0,1,2);
+    //
     data=(long int)current->d_type;
     PrintInfo_g(NULL,data,2,2);
     free(st);
+    //S_IFMT
     return 1;
 
 }
@@ -162,7 +169,7 @@ void FinishDir(int mngnum)
 
 //определние директори€ или файл
 //возвращаемое значение:
-//0 - директори€, 1 - файл, -1 - что-то другое
+//0 - директори€, 1 - исполн€емый файл,2 - текстовый, -1 - что-то другое
 int DirExecAnalysis(int mngnum, int pos,char *name)
 {
     chdir(curname[mngnum]);
@@ -178,8 +185,10 @@ int DirExecAnalysis(int mngnum, int pos,char *name)
     if(current->d_type==8)
     {
         strncpy(name,current->d_name,70);
-        //name=current->d_name;
-        return 1;
+        if(access(name,X_OK))
+            return 2;
+        else
+            return 1;
     }
     return -1;
 }

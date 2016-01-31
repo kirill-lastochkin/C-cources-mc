@@ -26,5 +26,6 @@ int DirExecAnalysis(int mngnum, int pos,char *name);
 int StartFile(char *name);
 int ExecuteCMD(char *str);
 
+int OpenFile(char *name);
 
 #endif

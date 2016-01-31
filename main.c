@@ -71,7 +71,11 @@ int main(void)
             {
                 StartFile(str);
                 RestoreState();
-
+            }
+            if(check==2)
+            {
+                OpenFile(str);
+                RestoreState();
             }
         }
 
